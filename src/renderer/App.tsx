@@ -1,49 +1,21 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
-import './App.css';
-
-const Hello = () => {
-  return (
-    <div>
-      <div className="Hello">
-        <img width="200" alt="icon" src={icon} />
-      </div>
-      <h1>electron-react-boilerplate</h1>
-      <div className="Hello">
-        <a
-          href="https://electron-react-boilerplate.js.org/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            Read our docs
-          </button>
-        </a>
-        <a
-          href="https://github.com/sponsors/electron-react-boilerplate"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="folded hands">
-              🙏
-            </span>
-            Donate
-          </button>
-        </a>
-      </div>
-    </div>
-  );
-};
+import './styles/index.css';
+import Home from './pages/Home';
+import SecondPageContainer from './pages/SecondPageContainer';
+import ImageCompress from './pages/ImageCompress';
+import ImageCrop from './pages/ImageCrop';
+import ImageDiff from './pages/ImageDiff';
 
 export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Hello />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/pages" element={<SecondPageContainer />}>
+          <Route path="img-compress" element={<ImageCompress />} />
+          <Route path="img-crop" element={<ImageCrop />} />
+          <Route path="img-diff" element={<ImageDiff />} />
+        </Route>
       </Routes>
     </Router>
   );

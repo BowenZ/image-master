@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client';
+import 'windi.css';
 import App from './App';
 
 const container = document.getElementById('root')!;
@@ -8,6 +9,6 @@ root.render(<App />);
 // calling IPC exposed from preload script
 window.electron.ipcRenderer.once('ipc-example', (arg) => {
   // eslint-disable-next-line no-console
-  console.log(arg);
+  console.log('renderer:', arg);
 });
 window.electron.ipcRenderer.sendMessage('ipc-example', ['ping']);

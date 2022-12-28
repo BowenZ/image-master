@@ -14,6 +14,8 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import { ChannelsEnum } from './types';
+import compressImg from './imgProcessor/compressImg';
 
 class AppUpdater {
   constructor() {
@@ -25,10 +27,23 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
+ipcMain.on(ChannelsEnum.EXAMPLE, async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
+  event.reply(ChannelsEnum.EXAMPLE, msgTemplate('pong'));
+});
+
+ipcMain.on(ChannelsEnum.COMPRESS_IMAGE, async (event, arg) => {
+  console.log('====ipc-compress-img====', arg);
+  compressImg(arg)
+    .then((res) => {
+      console.log('====压缩成功====', res);
+      event.reply(ChannelsEnum.COMPRESS_IMAGE, res);
+    })
+    .catch((err) => {
+      console.log('====压缩失败====', err);
+      event.reply(ChannelsEnum.COMPRESS_IMAGE, err);
+    });
 });
 
 if (process.env.NODE_ENV === 'production') {
