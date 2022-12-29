@@ -1,8 +1,6 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import { ChannelsEnum } from './types';
 
-export type Channels = 'ipc-example' | 'ipc-compress-img';
-
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
     sendMessage(channel: ChannelsEnum, args: unknown[]) {

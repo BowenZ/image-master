@@ -33,11 +33,20 @@ const Home: React.FC = () => {
         </button>
         <button
           type="button"
+          className="mr-4"
           onClick={() => {
             navigate('/pages/img-crop');
           }}
         >
           图片裁剪
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            navigate('/pages/img-compare');
+          }}
+        >
+          图片对比
         </button>
       </div>
     </Wrapper>

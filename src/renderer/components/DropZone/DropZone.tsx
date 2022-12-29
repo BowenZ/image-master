@@ -1,28 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-const DropZone = ({ onChange }: { onChange: (fileList: File[]) => void }) => {
+const DropZone = ({
+  fileList,
+  children,
+  onAddFile,
+}: {
+  fileList: File[];
+  children: React.ReactNode;
+  onAddFile: (fileList: File[]) => void;
+}) => {
   const [dragState, setDragState] = useState('');
-  const [fileList, setFileList] = useState<File[]>([]);
-
-  useEffect(() => {
-    onChange(fileList);
-  }, [fileList, onChange]);
-
   const handleDrop = (e: React.DragEvent): void => {
     e.preventDefault();
     console.log('====handleDrop====', e);
     console.log('====drop files====', e.dataTransfer.files);
     setDragState(e.type);
-    setFileList((p) => {
-      const filteredFiles = Array.from(e.dataTransfer.files).filter((item) => {
-        return !p.some((pItem) => pItem.path === item.path);
-      });
-      if (filteredFiles.length) {
-        return [...p, ...filteredFiles];
-      }
-      return p;
+    const filteredFiles = Array.from(e.dataTransfer.files).filter((item) => {
+      return !fileList.some((pItem) => pItem.path === item.path);
     });
+    if (filteredFiles.length) {
+      onAddFile(filteredFiles);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent): void => {
@@ -37,17 +36,13 @@ const DropZone = ({ onChange }: { onChange: (fileList: File[]) => void }) => {
 
   return (
     <Wrapper
-      className={dragState === 'dragover' ? 'active' : ''}
+      className={`drop-zone ${dragState === 'dragover' ? 'active' : ''}`}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
       DropZone {dragState}
-      <ul>
-        {fileList.map((item) => (
-          <li key={item.path}>{item.name}</li>
-        ))}
-      </ul>
+      {children}
     </Wrapper>
   );
 };
@@ -56,7 +51,7 @@ export default DropZone;
 
 const Wrapper = styled.div`
   margin: 20px 0;
-  height: 300px;
+  /* height: 300px; */
   border: 1px dashed;
   padding: 20px;
   &.active {

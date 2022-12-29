@@ -9,13 +9,16 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import url from 'url';
+import fs from 'fs';
+import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { ChannelsEnum } from './types';
+import { ChannelsEnum, ImgStatusEnum } from './types';
 import compressImg from './imgProcessor/compressImg';
+import { Schemas } from './common/network';
 
 class AppUpdater {
   constructor() {
@@ -35,15 +38,51 @@ ipcMain.on(ChannelsEnum.EXAMPLE, async (event, arg) => {
 
 ipcMain.on(ChannelsEnum.COMPRESS_IMAGE, async (event, arg) => {
   console.log('====ipc-compress-img====', arg);
-  compressImg(arg)
-    .then((res) => {
-      console.log('====压缩成功====', res);
-      event.reply(ChannelsEnum.COMPRESS_IMAGE, res);
-    })
-    .catch((err) => {
-      console.log('====压缩失败====', err);
-      event.reply(ChannelsEnum.COMPRESS_IMAGE, err);
-    });
+  for (const sourcePath of arg) {
+    try {
+      event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
+        status: ImgStatusEnum.PROCESSING,
+        sourcePath,
+      });
+      console.log('====开始压缩====', sourcePath);
+      const compressResult = await compressImg(sourcePath);
+      console.log('====压缩成功====', sourcePath, compressResult);
+      const { destinationPath } = compressResult[0];
+      const destinationSize = fs.statSync(destinationPath).size;
+      const originalSize = fs.statSync(sourcePath).size;
+
+      if (destinationSize > originalSize) {
+        fs.copyFileSync(sourcePath, destinationPath);
+      }
+      event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
+        status: ImgStatusEnum.SUCCESS,
+        sourcePath,
+        destinationPath,
+        destinationSize: Math.min(destinationSize, originalSize),
+      });
+    } catch (err) {
+      console.log('====压缩失败====', sourcePath);
+      event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
+        status: ImgStatusEnum.ERROR,
+        sourcePath,
+      });
+    }
+  }
+});
+
+ipcMain.on(ChannelsEnum.COMPARE_IMAGE, async (event, arg) => {
+  const win = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      // webSecurity: false,
+      preload: app.isPackaged
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../../.erb/dll/preload.js'),
+    },
+  });
+
+  win.loadURL(`${resolveHtmlPath('index.html')}#/img-compare`);
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -90,6 +129,7 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
+      // webSecurity: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -142,6 +182,24 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
+    // 这个需要在app.ready触发之后使用
+    const { defaultSession } = session;
+    defaultSession.protocol.registerFileProtocol(
+      Schemas.fileResourceProtocol,
+      (request, callback) => {
+        console.log('====request====', request);
+        const filePath = url.fileURLToPath(
+          `file://${request.url.slice(
+            `${Schemas.fileResourceProtocol}://`.length
+          )}`
+        );
+        // eslint-disable-next-line promise/no-callback-in-promise
+        callback({
+          path: filePath,
+        });
+      }
+    );
+
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
