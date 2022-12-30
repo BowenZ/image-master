@@ -11,6 +11,7 @@ module.exports = {
     'no-await-in-loop': 'off',
     'import/prefer-default-export': 'off',
     'jsx-a11y/alt-text': 'off',
+    'react/require-default-props': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,

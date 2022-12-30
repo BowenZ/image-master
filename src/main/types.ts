@@ -9,9 +9,19 @@ export enum ChannelsEnum {
   COMPARE_IMAGE = 'ipc-compare-img',
 }
 
+// 图片处理状态
 export enum ImgStatusEnum {
+  // 成功
   SUCCESS = 'success',
+  // 失败
   ERROR = 'error',
+  // 处理中
   PROCESSING = 'processing',
+  // 等待中
   WAITING = 'waiting',
+}
+
+export enum ImgProcessModeEnum {
+  REPLACE_FILE = 'REPLACE_FILE',
+  NEW_FILE = 'NEW_FILE',
 }

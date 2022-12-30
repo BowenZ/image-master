@@ -1,9 +1,19 @@
-import { ChannelsEnum, ImgStatusEnum } from 'main/types';
+import { ChannelsEnum, ImgProcessModeEnum, ImgStatusEnum } from 'main/types';
 import React, { useEffect, useState } from 'react';
 import DropZone from 'renderer/components/DropZone';
 import prettyBytes from 'pretty-bytes';
 import styled from 'styled-components';
 import { Schemas } from 'main/common/network';
+import { Radio } from 'antd';
+import type { RadioChangeEvent } from 'antd';
+import { AiOutlineArrowDown } from 'react-icons/ai';
+import { toPercent } from 'renderer/utils/commonTools';
+
+const compressQualityList = [
+  { quality: [0.1, 0.5], label: '低', value: 'low' },
+  { quality: [0.5, 0.8], label: '中', value: 'middle' },
+  { quality: [0.8, 0.9], label: '高', value: 'high' },
+];
 
 const ImageCompress: React.FC = () => {
   const [fileList, setFileList] = useState<
@@ -14,6 +24,17 @@ const ImageCompress: React.FC = () => {
     })[]
   >([]);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [quality, setQuality] = useState(compressQualityList[1].quality);
+  const [mode, setMode] = useState(ImgProcessModeEnum.REPLACE_FILE);
+
+  const onQualityChange = (e: RadioChangeEvent): void => {
+    console.log('====onQualityChange====', e);
+    setQuality(e.target.value);
+  };
+
+  const onQualityMode = (e: RadioChangeEvent): void => {
+    setMode(e.target.value);
+  };
 
   const handleAddFile = (files: File[]): void => {
     console.log('====handleAddFile====', files);
@@ -26,14 +47,16 @@ const ImageCompress: React.FC = () => {
     // compressImg(fileList.map((item) => item.path)).then((res) => {
     //   console.log('====compressImg res====', res);
     // });
+    console.log('====quality====', quality);
     if (!fileList.length) {
       return;
     }
     setIsCompressing(true);
-    window.electron.ipcRenderer.sendMessage(
-      ChannelsEnum.COMPRESS_IMAGE,
-      fileList.map((item) => item.path)
-    );
+    window.electron.ipcRenderer.sendMessage(ChannelsEnum.COMPRESS_IMAGE, {
+      filePathList: fileList.map((item) => item.path),
+      quality,
+      mode,
+    });
   };
 
   useEffect(() => {
@@ -59,6 +82,12 @@ const ImageCompress: React.FC = () => {
     });
   }, []);
 
+  const handleClickRemote = (path: string): void => {
+    setFileList((p) => {
+      return p.filter((item) => item.path !== path);
+    });
+  };
+
   const handleClickShowDiff = (
     oldFilePath: string,
     newFilePath: string
@@ -71,7 +100,24 @@ const ImageCompress: React.FC = () => {
 
   return (
     <Wrapper>
-      ImageCompress
+      <div>
+        <h3>压缩质量</h3>
+        <Radio.Group value={quality} onChange={onQualityChange}>
+          {compressQualityList.map((item) => (
+            <Radio value={item.quality} key={item.value}>
+              {item.label}
+            </Radio>
+          ))}
+        </Radio.Group>
+        {quality.join('-')}
+      </div>
+      <div>
+        <h3>压缩模式</h3>
+        <Radio.Group value={mode} onChange={onQualityMode}>
+          <Radio value={ImgProcessModeEnum.REPLACE_FILE}>覆盖源文件</Radio>
+          <Radio value={ImgProcessModeEnum.NEW_FILE}>新建文件</Radio>
+        </Radio.Group>
+      </div>
       <DropZone fileList={fileList} onAddFile={handleAddFile}>
         <FileList>
           {fileList.map((item) => (
@@ -88,7 +134,21 @@ const ImageCompress: React.FC = () => {
                   ? prettyBytes(item.destinationSize)
                   : null}
               </span>
+              {item.destinationSize ? (
+                <span>
+                  <AiOutlineArrowDown />
+                  {toPercent((item.size - item.destinationSize) / item.size)}
+                </span>
+              ) : null}
               <span>{item.status}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  handleClickRemote(item.path);
+                }}
+              >
+                移除
+              </button>
               {item.destinationPath ? (
                 <button
                   type="button"

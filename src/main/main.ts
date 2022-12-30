@@ -16,7 +16,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { ChannelsEnum, ImgStatusEnum } from './types';
+import { ChannelsEnum, ImgProcessModeEnum, ImgStatusEnum } from './types';
 import compressImg from './imgProcessor/compressImg';
 import { Schemas } from './common/network';
 
@@ -36,41 +36,63 @@ ipcMain.on(ChannelsEnum.EXAMPLE, async (event, arg) => {
   event.reply(ChannelsEnum.EXAMPLE, msgTemplate('pong'));
 });
 
-ipcMain.on(ChannelsEnum.COMPRESS_IMAGE, async (event, arg) => {
-  console.log('====ipc-compress-img====', arg);
-  for (const sourcePath of arg) {
-    try {
-      event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
-        status: ImgStatusEnum.PROCESSING,
-        sourcePath,
-      });
-      console.log('====开始压缩====', sourcePath);
-      const compressResult = await compressImg(sourcePath);
-      console.log('====压缩成功====', sourcePath, compressResult);
-      const { destinationPath } = compressResult[0];
-      const destinationSize = fs.statSync(destinationPath).size;
-      const originalSize = fs.statSync(sourcePath).size;
-
-      if (destinationSize > originalSize) {
-        fs.copyFileSync(sourcePath, destinationPath);
-      }
-      event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
-        status: ImgStatusEnum.SUCCESS,
-        sourcePath,
-        destinationPath,
-        destinationSize: Math.min(destinationSize, originalSize),
-      });
-    } catch (err) {
-      console.log('====压缩失败====', sourcePath);
-      event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
+ipcMain.on(
+  ChannelsEnum.COMPRESS_IMAGE,
+  async (
+    event,
+    arg: {
+      filePathList: string[];
+      quality?: [number, number];
+      mode?: ImgProcessModeEnum;
+    }
+  ) => {
+    console.log('====ipc-compress-img====', arg);
+    const { filePathList, quality, mode } = arg;
+    if (!filePathList?.length) {
+      event.reply(ChannelsEnum.COMPRESS_IMAGE, {
         status: ImgStatusEnum.ERROR,
-        sourcePath,
       });
+      return;
+    }
+
+    for (const sourcePath of filePathList) {
+      try {
+        event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
+          status: ImgStatusEnum.PROCESSING,
+          sourcePath,
+        });
+        console.log('====开始压缩====', sourcePath);
+        const compressResult = await compressImg(sourcePath, {
+          quality,
+          mode,
+        });
+        console.log('====压缩成功====', sourcePath, compressResult);
+        const { destinationPath } = compressResult[0];
+        const destinationSize = fs.statSync(destinationPath).size;
+        const originalSize = fs.statSync(sourcePath).size;
+
+        if (destinationSize > originalSize) {
+          fs.copyFileSync(sourcePath, destinationPath);
+        }
+        event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
+          status: ImgStatusEnum.SUCCESS,
+          sourcePath,
+          destinationPath,
+          destinationSize: Math.min(destinationSize, originalSize),
+        });
+      } catch (err) {
+        console.log('====压缩失败====', sourcePath);
+        event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
+          status: ImgStatusEnum.ERROR,
+          sourcePath,
+        });
+      }
     }
   }
-});
+);
 
 ipcMain.on(ChannelsEnum.COMPARE_IMAGE, async (event, arg) => {
+  console.log('====图片对比====', arg);
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -82,7 +104,13 @@ ipcMain.on(ChannelsEnum.COMPARE_IMAGE, async (event, arg) => {
     },
   });
 
-  win.loadURL(`${resolveHtmlPath('index.html')}#/img-compare`);
+  win.loadURL(
+    `${resolveHtmlPath(
+      'index.html'
+    )}#/img-compare?oldFilePath=${encodeURIComponent(
+      arg.oldFilePath
+    )}&newFilePath=${encodeURIComponent(arg.newFilePath)}`
+  );
 });
 
 if (process.env.NODE_ENV === 'production') {

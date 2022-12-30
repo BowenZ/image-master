@@ -6,7 +6,7 @@ const DropZone = ({
   children,
   onAddFile,
 }: {
-  fileList: File[];
+  fileList?: File[];
   children: React.ReactNode;
   onAddFile: (fileList: File[]) => void;
 }) => {
@@ -16,11 +16,15 @@ const DropZone = ({
     console.log('====handleDrop====', e);
     console.log('====drop files====', e.dataTransfer.files);
     setDragState(e.type);
-    const filteredFiles = Array.from(e.dataTransfer.files).filter((item) => {
-      return !fileList.some((pItem) => pItem.path === item.path);
-    });
-    if (filteredFiles.length) {
-      onAddFile(filteredFiles);
+    if (fileList && fileList.length) {
+      const filteredFiles = Array.from(e.dataTransfer.files).filter((item) => {
+        return !fileList.some((pItem) => pItem.path === item.path);
+      });
+      if (filteredFiles.length) {
+        onAddFile(filteredFiles);
+      }
+    } else {
+      onAddFile(Array.from(e.dataTransfer.files));
     }
   };
 
