@@ -114,11 +114,11 @@ ipcMain.on(ChannelsEnum.REVERT_IMAGE, async (event, arg) => {
   );
   if (bakFileData && bakFileData.originalFileBuffer) {
     fs.writeFileSync(oldFilePath, bakFileData.originalFileBuffer);
-    const sourceSize = fs.statSync(bakFileData.sourcePath).size;
+    const destinationSize = fs.statSync(bakFileData.originalFilePath).size;
     event.reply(ChannelsEnum.REVERT_IMAGE, {
       status: ImgStatusEnum.REVERTED,
-      sourcePath: bakFileData.sourcePath,
-      sourceSize,
+      destinationPath: bakFileData.originalFilePath,
+      destinationSize,
     });
   }
 });

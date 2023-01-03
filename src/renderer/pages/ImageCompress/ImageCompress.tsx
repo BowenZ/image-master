@@ -93,17 +93,17 @@ const ImageCompress: React.FC = () => {
     window.electron.ipcRenderer.on(ChannelsEnum.REVERT_IMAGE, (arg) => {
       // eslint-disable-next-line no-console
       console.log('REVERT_IMAGE:', arg);
-      const { status, sourcePath, sourceSize } = arg as {
+      const { status, destinationPath, destinationSize } = arg as {
         status: ImgStatusEnum;
-        sourcePath: string;
-        sourceSize: number;
+        destinationPath: string;
+        destinationSize: number;
       };
       setFileList((p) => {
         return p.map((item) => {
-          if (item.path === sourcePath) {
+          if (item.path === destinationPath) {
             item.status = status;
-            item.destinationPath = sourcePath;
-            item.destinationSize = sourceSize;
+            item.destinationPath = destinationPath;
+            item.destinationSize = destinationSize;
           }
           return item;
         });
