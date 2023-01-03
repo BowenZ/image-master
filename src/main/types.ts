@@ -5,6 +5,8 @@ export enum ChannelsEnum {
   EXAMPLE = 'ipc-example',
   // 压缩图片
   COMPRESS_IMAGE = 'ipc-compress-img',
+  // 还原图片
+  REVERT_IMAGE = 'ipc-revert-img',
   // 对比图片（打开新窗口）
   COMPARE_IMAGE = 'ipc-compare-img',
 }
@@ -19,6 +21,8 @@ export enum ImgStatusEnum {
   PROCESSING = 'processing',
   // 等待中
   WAITING = 'waiting',
+  // 已还原
+  REVERTED = 'reverted',
 }
 
 export enum ImgProcessModeEnum {

@@ -36,6 +36,13 @@ ipcMain.on(ChannelsEnum.EXAMPLE, async (event, arg) => {
   event.reply(ChannelsEnum.EXAMPLE, msgTemplate('pong'));
 });
 
+const compressImageBakList: {
+  originalFileBuffer: Buffer | null;
+  originalFilePath: string;
+  sourcePath: string;
+  destinationPath: string;
+}[] = [];
+
 ipcMain.on(
   ChannelsEnum.COMPRESS_IMAGE,
   async (
@@ -66,8 +73,9 @@ ipcMain.on(
           quality,
           mode,
         });
+        compressImageBakList.push(compressResult);
         console.log('====压缩成功====', sourcePath, compressResult);
-        const { destinationPath } = compressResult[0];
+        const { destinationPath } = compressResult;
         const destinationSize = fs.statSync(destinationPath).size;
         const originalSize = fs.statSync(sourcePath).size;
 
@@ -75,13 +83,19 @@ ipcMain.on(
           fs.copyFileSync(sourcePath, destinationPath);
         }
         event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
+          // 图片状态
           status: ImgStatusEnum.SUCCESS,
+          // 源文件地址
           sourcePath,
+          // 原始文件地址（若为替换压缩，则地址为备份的文件，若是新建压缩，地址为源文件地址）
+          originalFilePath: compressResult.sourcePath,
+          // 处理后的图片地址
           destinationPath,
+          // 处理后的图片大小
           destinationSize: Math.min(destinationSize, originalSize),
         });
       } catch (err) {
-        console.log('====压缩失败====', sourcePath);
+        console.log('====压缩失败====', sourcePath, err);
         event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
           status: ImgStatusEnum.ERROR,
           sourcePath,
@@ -90,6 +104,24 @@ ipcMain.on(
     }
   }
 );
+
+ipcMain.on(ChannelsEnum.REVERT_IMAGE, async (event, arg) => {
+  console.log('====图片还原====', arg);
+  console.log('====compressImageBakList====', compressImageBakList);
+  const { oldFilePath } = arg;
+  const bakFileData = compressImageBakList.find(
+    (item) => item.originalFilePath === oldFilePath
+  );
+  if (bakFileData && bakFileData.originalFileBuffer) {
+    fs.writeFileSync(oldFilePath, bakFileData.originalFileBuffer);
+    const sourceSize = fs.statSync(bakFileData.sourcePath).size;
+    event.reply(ChannelsEnum.REVERT_IMAGE, {
+      status: ImgStatusEnum.REVERTED,
+      sourcePath: bakFileData.sourcePath,
+      sourceSize,
+    });
+  }
+});
 
 ipcMain.on(ChannelsEnum.COMPARE_IMAGE, async (event, arg) => {
   console.log('====图片对比====', arg);

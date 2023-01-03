@@ -19,6 +19,7 @@ const ImageCompress: React.FC = () => {
   const [fileList, setFileList] = useState<
     (File & {
       status?: ImgStatusEnum;
+      originalFilePath?: string;
       destinationPath?: string;
       destinationSize?: number;
     })[]
@@ -63,18 +64,46 @@ const ImageCompress: React.FC = () => {
     window.electron.ipcRenderer.on(ChannelsEnum.COMPRESS_IMAGE, (arg) => {
       // eslint-disable-next-line no-console
       console.log('COMPRESS_IMAGE:', arg);
-      const { status, sourcePath, destinationPath, destinationSize } = arg as {
+      const {
+        status,
+        sourcePath,
+        originalFilePath,
+        destinationPath,
+        destinationSize,
+      } = arg as {
         status: ImgStatusEnum;
         sourcePath: string;
-        destinationPath?: string;
-        destinationSize?: number;
+        originalFilePath: string;
+        destinationPath: string;
+        destinationSize: number;
       };
       setFileList((p) => {
         return p.map((item) => {
           if (item.path === sourcePath) {
             item.status = status;
+            item.originalFilePath = originalFilePath;
             item.destinationPath = destinationPath;
             item.destinationSize = destinationSize;
+          }
+          return item;
+        });
+      });
+    });
+
+    window.electron.ipcRenderer.on(ChannelsEnum.REVERT_IMAGE, (arg) => {
+      // eslint-disable-next-line no-console
+      console.log('REVERT_IMAGE:', arg);
+      const { status, sourcePath, sourceSize } = arg as {
+        status: ImgStatusEnum;
+        sourcePath: string;
+        sourceSize: number;
+      };
+      setFileList((p) => {
+        return p.map((item) => {
+          if (item.path === sourcePath) {
+            item.status = status;
+            item.destinationPath = sourcePath;
+            item.destinationSize = sourceSize;
           }
           return item;
         });
@@ -95,6 +124,12 @@ const ImageCompress: React.FC = () => {
     window.electron.ipcRenderer.sendMessage(ChannelsEnum.COMPARE_IMAGE, {
       oldFilePath,
       newFilePath,
+    });
+  };
+
+  const handleClickRevertImg = (oldFilePath: string): void => {
+    window.electron.ipcRenderer.sendMessage(ChannelsEnum.REVERT_IMAGE, {
+      oldFilePath,
     });
   };
 
@@ -149,16 +184,31 @@ const ImageCompress: React.FC = () => {
               >
                 移除
               </button>
-              {item.destinationPath ? (
+              {item.destinationPath && item.status === ImgStatusEnum.SUCCESS ? (
                 <button
                   type="button"
                   onClick={() => {
-                    if (item.destinationPath) {
-                      handleClickShowDiff(item.path, item.destinationPath);
+                    if (item.destinationPath && item.originalFilePath) {
+                      handleClickShowDiff(
+                        item.originalFilePath,
+                        item.destinationPath
+                      );
                     }
                   }}
                 >
                   查看差异
+                </button>
+              ) : null}
+
+              {mode === ImgProcessModeEnum.REPLACE_FILE &&
+              item.status === ImgStatusEnum.SUCCESS ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleClickRevertImg(item.path);
+                  }}
+                >
+                  还原
                 </button>
               ) : null}
             </li>
