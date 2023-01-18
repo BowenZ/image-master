@@ -112,9 +112,14 @@ ipcMain.on(ChannelsEnum.REVERT_IMAGE, async (event, arg) => {
   const bakFileData = compressImageBakList.find(
     (item) => item.originalFilePath === oldFilePath
   );
-  if (bakFileData && bakFileData.originalFileBuffer) {
-    fs.writeFileSync(oldFilePath, bakFileData.originalFileBuffer);
-    const destinationSize = fs.statSync(bakFileData.originalFilePath).size;
+  if (bakFileData?.sourcePath) {
+    fs.copyFileSync(
+      bakFileData.sourcePath,
+      oldFilePath,
+      fs.constants.COPYFILE_FICLONE
+    );
+    const destinationSize = fs.statSync(bakFileData.sourcePath).size;
+    fs.rmSync(bakFileData.sourcePath);
     event.reply(ChannelsEnum.REVERT_IMAGE, {
       status: ImgStatusEnum.REVERTED,
       destinationPath: bakFileData.originalFilePath,

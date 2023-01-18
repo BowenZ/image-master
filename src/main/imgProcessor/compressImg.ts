@@ -1,17 +1,24 @@
 import path from 'path';
 import fs from 'fs';
 import imagemin from 'imagemin';
-import type { Result } from 'imagemin';
 import imageminJpegtran from 'imagemin-jpegtran';
 import imageminPngquant from 'imagemin-pngquant';
 import md5 from 'md5';
-import { app } from 'electron';
 import { ImgProcessModeEnum } from '../types';
+import { imgBakDirPath } from '../config/paths';
 
+/**
+ * 压缩图片
+ * @param filePath 图片路径
+ * @param options 压缩配置
+ * @returns Promise
+ */
 export default function compressImg(
   filePath: string,
   options?: {
+    // 质量,[0,1]
     quality?: [number, number];
+    // 替换图片还是新建图片
     mode?: ImgProcessModeEnum;
   }
 ) {
@@ -32,7 +39,7 @@ export default function compressImg(
 
     let bakFilePath = '';
     if (isReplace) {
-      const bakBasePath = path.join(app.getPath('userData'), 'tmp');
+      const bakBasePath = imgBakDirPath;
       if (!fs.existsSync(bakBasePath)) {
         fs.mkdirSync(bakBasePath, { recursive: true });
       }
