@@ -9,6 +9,8 @@ export enum ChannelsEnum {
   REVERT_IMAGE = 'ipc-revert-img',
   // 对比图片（打开新窗口）
   COMPARE_IMAGE = 'ipc-compare-img',
+  // 获取图片信息
+  GET_IMAGE_INFO = 'ipc-get-img-info',
 }
 
 // 图片处理状态

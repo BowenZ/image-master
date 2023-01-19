@@ -19,6 +19,7 @@ import { resolveHtmlPath } from './util';
 import { ChannelsEnum, ImgProcessModeEnum, ImgStatusEnum } from './types';
 import compressImg from './imgProcessor/compressImg';
 import { Schemas } from './common/network';
+import handleGetImgInfo from './ipcHandler/handleGetImgInfo';
 
 class AppUpdater {
   constructor() {
@@ -140,6 +141,8 @@ ipcMain.on(ChannelsEnum.COMPARE_IMAGE, async (event, arg) => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+
+  ipcMain.on(ChannelsEnum.GET_IMAGE_INFO, handleGetImgInfo);
 
   win.loadURL(
     `${resolveHtmlPath(

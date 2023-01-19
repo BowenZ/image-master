@@ -6,6 +6,7 @@ import ImageCompress from './pages/ImageCompress';
 import ImageCrop from './pages/ImageCrop';
 import ImageDiff from './pages/ImageDiff';
 import ImageCompare from './pages/ImageCompare';
+import ImageInfo from './pages/ImageInfo';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="img-crop" element={<ImageCrop />} />
           <Route path="img-diff" element={<ImageDiff />} />
           <Route path="img-compare" element={<ImageCompare />} />
+          <Route path="img-info" element={<ImageInfo />} />
         </Route>
         <Route path="/img-compare" element={<ImageCompare />} />
       </Routes>
