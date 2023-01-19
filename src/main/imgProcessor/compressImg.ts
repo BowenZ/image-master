@@ -1,8 +1,10 @@
 import path from 'path';
 import fs from 'fs';
 import imagemin from 'imagemin';
-import imageminJpegtran from 'imagemin-jpegtran';
+// import imageminJpegtran from 'imagemin-jpegtran';
+import imageminMozjpeg from 'imagemin-mozjpeg';
 import imageminPngquant from 'imagemin-pngquant';
+import imageminGifsicle from 'imagemin-gifsicle';
 import md5 from 'md5';
 import { ImgProcessModeEnum } from '../types';
 import { imgBakDirPath } from '../config/paths';
@@ -54,10 +56,11 @@ export default function compressImg(
         ? path.resolve(filePath, '../')
         : path.resolve(filePath, '../压缩图片'),
       plugins: [
-        imageminJpegtran(),
+        imageminMozjpeg(),
         imageminPngquant({
           quality: options?.quality || [0.3, 0.5],
         }),
+        imageminGifsicle(),
       ],
     })
       .then((res) => {

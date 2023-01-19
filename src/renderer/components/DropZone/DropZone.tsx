@@ -45,7 +45,7 @@ const DropZone = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
-      DropZone {dragState}
+      拖拽图片到此 {dragState}
       {children}
     </Wrapper>
   );
