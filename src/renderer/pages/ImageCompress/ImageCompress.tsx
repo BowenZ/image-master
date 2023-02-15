@@ -10,9 +10,9 @@ import { AiOutlineArrowDown } from 'react-icons/ai';
 import { toPercent } from 'renderer/utils/commonTools';
 
 const compressQualityList = [
-  { quality: [0.1, 0.5], label: '低', value: 'low' },
-  { quality: [0.5, 0.8], label: '中', value: 'middle' },
-  { quality: [0.8, 0.9], label: '高', value: 'high' },
+  { quality: [0.1, 0.6], label: '低', value: 'low' },
+  { quality: [0.6, 0.9], label: '中', value: 'middle' },
+  { quality: [0.9, 1], label: '高', value: 'high' },
 ];
 
 const ImageCompress: React.FC = () => {
@@ -26,7 +26,7 @@ const ImageCompress: React.FC = () => {
   >([]);
   const [isCompressing, setIsCompressing] = useState(false);
   const [quality, setQuality] = useState(compressQualityList[1].quality);
-  const [mode, setMode] = useState(ImgProcessModeEnum.REPLACE_FILE);
+  const [mode, setMode] = useState(ImgProcessModeEnum.NEW_FILE);
 
   const onQualityChange = (e: RadioChangeEvent): void => {
     console.log('====onQualityChange====', e);

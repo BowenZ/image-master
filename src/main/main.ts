@@ -10,15 +10,17 @@
  */
 import path from 'path';
 import url from 'url';
-import fs from 'fs';
 import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { ChannelsEnum, ImgProcessModeEnum, ImgStatusEnum } from './types';
-import compressImg from './imgProcessor/compressImg';
+import { ChannelsEnum } from './types';
 import { Schemas } from './common/network';
+import bindIPCEvent from './ipcHandler';
+import handleCompressImage from './ipcHandler/handleCompressImage';
+import handleRevertImage from './ipcHandler/handleRevertImage';
+import handleCompareImage from './ipcHandler/handleCompareImage';
 import handleGetImgInfo from './ipcHandler/handleGetImgInfo';
 
 class AppUpdater {
@@ -37,121 +39,11 @@ ipcMain.on(ChannelsEnum.EXAMPLE, async (event, arg) => {
   event.reply(ChannelsEnum.EXAMPLE, msgTemplate('pong'));
 });
 
-const compressImageBakList: {
-  originalFileBuffer: Buffer | null;
-  originalFilePath: string;
-  sourcePath: string;
-  destinationPath: string;
-}[] = [];
-
-ipcMain.on(
-  ChannelsEnum.COMPRESS_IMAGE,
-  async (
-    event,
-    arg: {
-      filePathList: string[];
-      quality?: [number, number];
-      mode?: ImgProcessModeEnum;
-    }
-  ) => {
-    console.log('====ipc-compress-img====', arg);
-    const { filePathList, quality, mode } = arg;
-    if (!filePathList?.length) {
-      event.reply(ChannelsEnum.COMPRESS_IMAGE, {
-        status: ImgStatusEnum.ERROR,
-      });
-      return;
-    }
-
-    for (const sourcePath of filePathList) {
-      try {
-        event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
-          status: ImgStatusEnum.PROCESSING,
-          sourcePath,
-        });
-        console.log('====开始压缩====', sourcePath);
-        const compressResult = await compressImg(sourcePath, {
-          quality,
-          mode,
-        });
-        compressImageBakList.push(compressResult);
-        console.log('====压缩成功====', sourcePath, compressResult);
-        const { destinationPath } = compressResult;
-        const destinationSize = fs.statSync(destinationPath).size;
-        const originalSize = fs.statSync(sourcePath).size;
-
-        if (destinationSize > originalSize) {
-          fs.copyFileSync(sourcePath, destinationPath);
-        }
-        event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
-          // 图片状态
-          status: ImgStatusEnum.SUCCESS,
-          // 源文件地址
-          sourcePath,
-          // 原始文件地址（若为替换压缩，则地址为备份的文件，若是新建压缩，地址为源文件地址）
-          originalFilePath: compressResult.sourcePath,
-          // 处理后的图片地址
-          destinationPath,
-          // 处理后的图片大小
-          destinationSize: Math.min(destinationSize, originalSize),
-        });
-      } catch (err) {
-        console.log('====压缩失败====', sourcePath, err);
-        event.sender.send(ChannelsEnum.COMPRESS_IMAGE, {
-          status: ImgStatusEnum.ERROR,
-          sourcePath,
-        });
-      }
-    }
-  }
-);
-
-ipcMain.on(ChannelsEnum.REVERT_IMAGE, async (event, arg) => {
-  console.log('====图片还原====', arg);
-  console.log('====compressImageBakList====', compressImageBakList);
-  const { oldFilePath } = arg;
-  const bakFileData = compressImageBakList.find(
-    (item) => item.originalFilePath === oldFilePath
-  );
-  if (bakFileData?.sourcePath) {
-    fs.copyFileSync(
-      bakFileData.sourcePath,
-      oldFilePath,
-      fs.constants.COPYFILE_FICLONE
-    );
-    const destinationSize = fs.statSync(bakFileData.sourcePath).size;
-    fs.rmSync(bakFileData.sourcePath);
-    event.reply(ChannelsEnum.REVERT_IMAGE, {
-      status: ImgStatusEnum.REVERTED,
-      destinationPath: bakFileData.originalFilePath,
-      destinationSize,
-    });
-  }
-});
-
-ipcMain.on(ChannelsEnum.COMPARE_IMAGE, async (event, arg) => {
-  console.log('====图片对比====', arg);
-  const win = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    webPreferences: {
-      // webSecurity: false,
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
-    },
-  });
-
-  ipcMain.on(ChannelsEnum.GET_IMAGE_INFO, handleGetImgInfo);
-
-  win.loadURL(
-    `${resolveHtmlPath(
-      'index.html'
-    )}#/img-compare?oldFilePath=${encodeURIComponent(
-      arg.oldFilePath
-    )}&newFilePath=${encodeURIComponent(arg.newFilePath)}`
-  );
-});
+bindIPCEvent(ipcMain)
+  .on(ChannelsEnum.COMPRESS_IMAGE, handleCompressImage)
+  .on(ChannelsEnum.REVERT_IMAGE, handleRevertImage)
+  .on(ChannelsEnum.COMPARE_IMAGE, handleCompareImage)
+  .on(ChannelsEnum.GET_IMAGE_INFO, handleGetImgInfo);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

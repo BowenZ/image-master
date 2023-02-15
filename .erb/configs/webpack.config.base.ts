@@ -49,6 +49,8 @@ const configuration: webpack.Configuration = {
     alias: {
       '@': path.resolve(__dirname, '../../src'),
       '#': path.resolve(__dirname, '../../assets'),
+      main: path.resolve(__dirname, '../../src/main'),
+      renderer: path.resolve(__dirname, '../../src/renderer'),
     },
   },
 

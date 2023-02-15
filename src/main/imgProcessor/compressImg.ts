@@ -4,7 +4,8 @@ import imagemin from 'imagemin';
 // import imageminJpegtran from 'imagemin-jpegtran';
 import imageminMozjpeg from 'imagemin-mozjpeg';
 import imageminPngquant from 'imagemin-pngquant';
-import imageminGifsicle from 'imagemin-gifsicle';
+// import imageminGifsicle from 'imagemin-gifsicle';
+import imageminGiflossy from 'imagemin-giflossy';
 import md5 from 'md5';
 import { ImgProcessModeEnum } from '../types';
 import { imgBakDirPath } from '../config/paths';
@@ -60,7 +61,10 @@ export default function compressImg(
         imageminPngquant({
           quality: options?.quality || [0.3, 0.5],
         }),
-        imageminGifsicle(),
+        // imageminGifsicle({
+        //   optimizationLevel: 3,
+        // }),
+        imageminGiflossy({ lossy: 80 }),
       ],
     })
       .then((res) => {

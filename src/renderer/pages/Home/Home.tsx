@@ -22,7 +22,7 @@ const Home: React.FC = () => {
         >
           图片压缩
         </button>
-        <button
+        {/* <button
           type="button"
           className="mr-4"
           onClick={() => {
@@ -30,7 +30,7 @@ const Home: React.FC = () => {
           }}
         >
           图片差异
-        </button>
+        </button> */}
         <button
           type="button"
           className="mr-4"

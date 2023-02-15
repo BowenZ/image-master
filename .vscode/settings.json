@@ -27,5 +27,5 @@
     "package-lock.json": true,
     "*.{css,sass,scss}.d.ts": true
   },
-  "cSpell.words": ["Mozjpeg", "Pngquant", "tinify"]
+  "cSpell.words": ["EXIF", "Mozjpeg", "Pngquant", "tinify"]
 }
