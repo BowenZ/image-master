@@ -92,6 +92,7 @@
     "electron-updater": "^5.2.3",
     "exif-js": "^2.3.0",
     "exifreader": "^4.9.1",
+    "file-extension": "^4.0.5",
     "imagemin": "^7.0.1",
     "imagemin-giflossy": "^5.1.10",
     "imagemin-gifsicle": "^7.0.0",

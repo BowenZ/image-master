@@ -11,6 +11,8 @@ export enum ChannelsEnum {
   COMPARE_IMAGE = 'ipc-compare-img',
   // 获取图片信息
   GET_IMAGE_INFO = 'ipc-get-img-info',
+  // 格式转换
+  IMAGE_CONVERT = 'ipc-convert-img',
 }
 
 // 图片处理状态

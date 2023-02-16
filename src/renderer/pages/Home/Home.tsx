@@ -31,7 +31,7 @@ const Home: React.FC = () => {
         >
           图片差异
         </button> */}
-        <button
+        {/* <button
           type="button"
           className="mr-4"
           onClick={() => {
@@ -39,6 +39,15 @@ const Home: React.FC = () => {
           }}
         >
           图片裁剪
+        </button> */}
+        <button
+          type="button"
+          className="mr-4"
+          onClick={() => {
+            navigate('/pages/img-convert');
+          }}
+        >
+          格式转换
         </button>
         <button
           type="button"

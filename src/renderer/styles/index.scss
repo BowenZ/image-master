@@ -20,13 +20,17 @@ button {
   transition: all ease-in 0.1s;
   cursor: pointer;
   opacity: 0.9;
+  &:not([disabled]):hover {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  &[disabled] {
+    color: #aaa;
+  }
 }
 
-button:hover {
-  transform: scale(1.05);
-  opacity: 1;
-}
-
-li {
-  list-style: none;
+.ant-form-item-control-input-content {
+  .ant-input-number {
+    width: 100%;
+  }
 }

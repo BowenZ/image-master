@@ -1,5 +1,5 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import './styles/index.css';
+import './styles/index.scss';
 import Home from './pages/Home';
 import SecondPageContainer from './pages/SecondPageContainer';
 import ImageCompress from './pages/ImageCompress';
@@ -7,6 +7,7 @@ import ImageCrop from './pages/ImageCrop';
 import ImageDiff from './pages/ImageDiff';
 import ImageCompare from './pages/ImageCompare';
 import ImageInfo from './pages/ImageInfo';
+import ImageConvert from './pages/ImageConvert';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="img-diff" element={<ImageDiff />} />
           <Route path="img-compare" element={<ImageCompare />} />
           <Route path="img-info" element={<ImageInfo />} />
+          <Route path="img-convert" element={<ImageConvert />} />
         </Route>
         <Route path="/img-compare" element={<ImageCompare />} />
       </Routes>

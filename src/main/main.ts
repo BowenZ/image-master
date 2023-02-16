@@ -22,6 +22,7 @@ import handleCompressImage from './ipcHandler/handleCompressImage';
 import handleRevertImage from './ipcHandler/handleRevertImage';
 import handleCompareImage from './ipcHandler/handleCompareImage';
 import handleGetImgInfo from './ipcHandler/handleGetImgInfo';
+import handleConvertImage from './ipcHandler/handleConvertImage';
 
 class AppUpdater {
   constructor() {
@@ -43,7 +44,8 @@ bindIPCEvent(ipcMain)
   .on(ChannelsEnum.COMPRESS_IMAGE, handleCompressImage)
   .on(ChannelsEnum.REVERT_IMAGE, handleRevertImage)
   .on(ChannelsEnum.COMPARE_IMAGE, handleCompareImage)
-  .on(ChannelsEnum.GET_IMAGE_INFO, handleGetImgInfo);
+  .on(ChannelsEnum.GET_IMAGE_INFO, handleGetImgInfo)
+  .on(ChannelsEnum.IMAGE_CONVERT, handleConvertImage);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

@@ -12,6 +12,7 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'jsx-a11y/alt-text': 'off',
     'react/require-default-props': 'off',
+    'react/jsx-props-no-spreading': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,
