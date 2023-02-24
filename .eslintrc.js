@@ -13,6 +13,7 @@ module.exports = {
     'jsx-a11y/alt-text': 'off',
     'react/require-default-props': 'off',
     'react/jsx-props-no-spreading': 'off',
+    'promise/always-return': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,

@@ -1,6 +1,11 @@
 import { FormatEnum } from 'sharp';
 import convertImg from '../imgProcessor/convertImg';
-import { ChannelsEnum, ImgProcessModeEnum, ImgStatusEnum } from '../types';
+import {
+  ChannelsEnum,
+  ImgConvertOutputTypeEnum,
+  ImgProcessModeEnum,
+  ImgStatusEnum,
+} from '../types';
 
 export default async function handleConvertImage(
   event: Electron.IpcMainEvent,
@@ -9,14 +14,13 @@ export default async function handleConvertImage(
     config: {
       format: keyof FormatEnum;
       quality: number;
+      outputType: ImgConvertOutputTypeEnum;
+      outputDir: string;
     };
   }
 ) {
   console.log('====ipc-compress-img====', arg);
-  const {
-    filePathList,
-    config: { format, quality },
-  } = arg;
+  const { filePathList, config } = arg;
   if (!filePathList?.length) {
     event.reply(ChannelsEnum.IMAGE_CONVERT, {
       status: ImgStatusEnum.ERROR,
@@ -31,10 +35,7 @@ export default async function handleConvertImage(
         sourcePath,
       });
       console.log('====开始转换====', sourcePath);
-      const result = await convertImg(sourcePath, {
-        format,
-        quality,
-      });
+      const result = await convertImg(sourcePath, config);
       console.log('====转换成功====', sourcePath, result);
       const { destinationPath, size } = result;
 

@@ -20,9 +20,13 @@ const OpenMapByLocation = ({
   };
   return (
     <Wrapper>
-      <button type="button" onClick={handleClickOpen}>
-        打开地图位置
-      </button>
+      {longitude && latitude ? (
+        <button type="button" onClick={handleClickOpen}>
+          打开地图位置
+        </button>
+      ) : (
+        <span>无位置信息</span>
+      )}
     </Wrapper>
   );
 };

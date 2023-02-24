@@ -34,16 +34,20 @@ const ImageConvert: React.FC = () => {
 
   const handleClickGo = (): void => {
     console.log('====handleClickGo====');
-    console.log('====form value====', form.getFieldsValue());
+    console.log('====form value====', form.validateFields());
     if (!fileList.length) {
       return;
     }
-    setIsLoading(true);
-    const config = form.getFieldsValue();
-    window.electron.ipcRenderer.sendMessage(ChannelsEnum.IMAGE_CONVERT, {
-      filePathList: fileList.map((item) => item.path),
-      config,
-    });
+    form
+      .validateFields()
+      .then((config) => {
+        setIsLoading(true);
+        window.electron.ipcRenderer.sendMessage(ChannelsEnum.IMAGE_CONVERT, {
+          filePathList: fileList.map((item) => item.path),
+          config,
+        });
+      })
+      .catch((err) => {});
   };
 
   useEffect(() => {

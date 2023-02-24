@@ -13,6 +13,8 @@ export enum ChannelsEnum {
   GET_IMAGE_INFO = 'ipc-get-img-info',
   // 格式转换
   IMAGE_CONVERT = 'ipc-convert-img',
+  // 打开目录选择窗口
+  SELECT_DIR = 'ipc-select-dir',
 }
 
 // 图片处理状态
@@ -29,7 +31,18 @@ export enum ImgStatusEnum {
   REVERTED = 'reverted',
 }
 
+// 图片处理模式
 export enum ImgProcessModeEnum {
+  // 替换文件
   REPLACE_FILE = 'REPLACE_FILE',
+  // 新建文件
   NEW_FILE = 'NEW_FILE',
+}
+
+// 图片格式转换存储位置
+export enum ImgConvertOutputTypeEnum {
+  // 源文件所在目录
+  SOURCE_DIR = 'SOURCE_DIR',
+  // 指定目录
+  NEW_DIR = 'NEW_DIR',
 }
