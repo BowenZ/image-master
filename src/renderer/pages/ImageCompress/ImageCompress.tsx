@@ -8,12 +8,15 @@ import { Radio } from 'antd';
 import type { RadioChangeEvent } from 'antd';
 import { AiOutlineArrowDown } from 'react-icons/ai';
 import { toPercent } from 'renderer/utils/commonTools';
+import fileExtension from 'file-extension';
 
 const compressQualityList = [
   { quality: [0.1, 0.6], label: '低', value: 'low' },
   { quality: [0.6, 0.9], label: '中', value: 'middle' },
   { quality: [0.9, 1], label: '高', value: 'high' },
 ];
+
+const availableImgType = ['gif', 'png', 'jpg', 'jpeg'];
 
 const ImageCompress: React.FC = () => {
   const [fileList, setFileList] = useState<
@@ -153,7 +156,11 @@ const ImageCompress: React.FC = () => {
           <Radio value={ImgProcessModeEnum.NEW_FILE}>新建文件</Radio>
         </Radio.Group>
       </div>
-      <DropZone fileList={fileList} onAddFile={handleAddFile}>
+      <DropZone
+        fileList={fileList}
+        availableExtNames={availableImgType}
+        onAddFile={handleAddFile}
+      >
         <FileList>
           {fileList.map((item) => (
             <li key={item.path} className="file-item">

@@ -1,12 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import fileExtension from 'file-extension';
+import { message } from 'antd';
+
+const imgExtNames = [
+  'avif',
+  'gif',
+  'heif',
+  'jpeg',
+  'jpg',
+  'jp2',
+  'jxl',
+  'png',
+  'svg',
+  'tiff',
+  'tif',
+  'webp',
+];
 
 const DropZone = ({
   fileList,
   children,
+  availableExtNames = imgExtNames,
   onAddFile,
 }: {
   fileList?: File[];
+  availableExtNames?: string[];
   children: React.ReactNode;
   onAddFile: (fileList: File[]) => void;
 }) => {
@@ -16,16 +35,30 @@ const DropZone = ({
     console.log('====handleDrop====', e);
     console.log('====drop files====', e.dataTransfer.files);
     setDragState(e.type);
+    let addFileList: File[] = [];
     if (fileList && fileList.length) {
       const filteredFiles = Array.from(e.dataTransfer.files).filter((item) => {
         return !fileList.some((pItem) => pItem.path === item.path);
       });
       if (filteredFiles.length) {
-        onAddFile(filteredFiles);
+        addFileList = filteredFiles;
       }
     } else {
-      onAddFile(Array.from(e.dataTransfer.files));
+      addFileList = Array.from(e.dataTransfer.files);
     }
+    const availableFiles = addFileList.filter((item) => {
+      return availableExtNames.some(
+        (extItem) => fileExtension(item.path) === extItem
+      );
+    });
+
+    if (availableFiles.length === 0) {
+      message.info('文件格式不支持，请重新选择');
+    } else if (availableFiles.length < addFileList.length) {
+      message.info('已过滤不支持的文件格式');
+    }
+
+    onAddFile(availableFiles);
   };
 
   const handleDragOver = (e: React.DragEvent): void => {
